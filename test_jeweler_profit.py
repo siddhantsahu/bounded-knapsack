@@ -1,0 +1,44 @@
+import pytest
+import glob
+
+from jeweler_profit import Item, max_profit, get_solutions
+
+TEST_FILES = glob.glob('test_data/*.txt')
+
+
+@pytest.fixture(scope='module', params=['test_data/in-6363-2018s.txt'])
+def test_data(request):
+    """Parses the input and output from a file."""
+    items = []
+    solutions = set()
+    with open(request.param, 'r') as fp:
+        W, N = [int(x) for x in fp.readline().strip().split(' ')]
+        for i in range(N):
+            i, w, p, n, x, f, c, *rest = [int(x) for x in fp.readline().strip().split(' ')]
+            items.append(Item(i, w, p, n, x, f, c))
+        fp.readline()  # caption for output
+        max_profit, number_of_solutions = [int(x) for x in fp.readline().strip().split(' ')]
+        fp.readline()  # caption for list of optimal solutions
+        for i in range(number_of_solutions):
+            solutions.add(tuple([int(x) for x in fp.readline().strip().split(' ')]))
+    return {'input': (W, N, items),
+            'output': (max_profit, number_of_solutions, solutions)}
+
+
+@pytest.fixture(scope='module')
+def test_max_profit(test_data):
+    W, N, items = test_data['input']
+    max_value, _, _ = test_data['output']
+    m = max_profit(W, N, items)
+    assert m[N][W] == max_value
+    return m
+
+
+def test_solutions(test_data, test_max_profit):
+    W, N, items = test_data['input']
+    max_value, n_solutions, solutions = test_data['output']
+    print(solutions)
+    m = test_max_profit
+    sol = get_solutions(m, items, N, W)
+    assert len(sol) == n_solutions
+    assert sol == solutions

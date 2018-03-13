@@ -85,7 +85,7 @@ def get_solutions(m, items, i, w):
                     reconstruct(m, items, i - 1, w - k * items[i - 1].weight)
 
     reconstruct(m, items, i, w)
-    return solutions
+    return set(zip(*[iter(solutions[::-1])] * i))
 
 
 if __name__ == '__main__':
@@ -117,8 +117,5 @@ if __name__ == '__main__':
 
     # if there is a second command line argument, prints the list of optimal solutions
     if len(sys.argv) > 2 and sys.argv[2]:
-        for i in range(number_of_solutions):
-            q = []
-            for j in range(N):
-                q.append(sol.pop())
-            print(' '.join([str(x) for x in q]))
+        for s in sol:
+            print(' '.join([str(x) for x in s]))
