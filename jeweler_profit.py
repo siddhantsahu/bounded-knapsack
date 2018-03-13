@@ -4,10 +4,10 @@ http://www.utdallas.edu/~rbk/teach/2018/hw/p1-6363-2018s.pdf
 
 Author: Siddhant Sahu
 """
+import math
 import os
 import sys
-import math
-import pdb
+
 
 class Item(object):
     """A class representing an item and its attributes."""
@@ -106,7 +106,7 @@ if __name__ == '__main__':
                 i, w, p, n, x, f, c, *rest = [int(x) for x in fp.readline().strip().split(' ')]
                 items.append(Item(i, w, p, n, x, f, c))
     else:
-        print('Command line argument not recognized or file doesn\'t exist')
+        raise ValueError('Command line argument not recognized or file doesn\'t exist')
 
     m = max_profit(W, N, items)
     sol = get_solutions(m, items, N, W)

@@ -1,0 +1,54 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=1in]{geometry}
+
+\title{CS 6363.004 Algorithms: Programming Project}
+\author{Siddhant Sahu}
+
+\setlength{\parindent}{0em}
+
+\begin{document}
+\maketitle
+
+\paragraph{Problem Formulation}
+We define $m(i, w)$ to be the maximum profit that can be generated using the first $i$ items and $w$ units of gold, where $i$ and $w$ are both non-negative integers. Clearly, $m(0, w) = 0$ for all $w$. We can't make any profit with 0 items. The recurrence is:
+
+\[ m(i, w) =
+\begin{cases}
+\max (m(i-1, w-k \cdot w_i) + k \cdot p_i - min(c_i, f_i \cdot (n_i - k)))       & \quad \text{if } 0 \leq k < n_i\\
+\max (m(i-1, w-k \cdot w_i) + k \cdot p_i)  & \quad \text{if } n_i \leq k \leq x_i
+\end{cases}
+\]
+
+where $k$ represents the quantity (i.e. number of copies) of item $i$.
+$$\ 0 \leq k \leq min\left(x_i, \left\lfloor\frac{w}{w_i}\right\rfloor\right)$$
+
+\paragraph{Feasibility}
+Proof by induction on $i$. We claim that there exists a solution for $m(i, w)$.\\
+Basis Step: Let $i = 0$. We can not make any profit with 0 items. Thus, $m(0, w) = 0$, which is correct. This establishes the basis step.\\
+Inductive Step: For any $(i, w)$ and $\ 0 \leq k \leq min\left(x_i, \left\lfloor\frac{w}{w_i}\right\rfloor\right)$, we have two cases as mentioned in the recursion. In both cases, we compute $m(i-1, w-k \cdot w_i)$. Since, $i-1 < i$, by induction hypothesis, $m(i-1, w-k \cdot w_i)$ is feasible. This completes the inductive step and therefore, the feasibility proof.
+
+\paragraph{Optimality}
+Let $Opt(i, w)$ be an optimal solution for the problem by using the first $i$ items and $w$ units of gold. We claim that $m(i, w) \leq Opt(i, w)$. Proof by induction on $i$.\\
+Basis Step: Let $i = 0$. We can not make any profit with 0 items. Thus, $m(0, w) = 0 = Opt(0, w)$, which is correct.\\
+Inductive Step: Consider $i > 0$ and $0 \leq k \leq min\left(x_i, \left\lfloor\frac{w}{w_i}\right\rfloor\right)$. We have two cases here.
+\begin{itemize}
+	\item Case 1: $0 \leq k \leq n_i$, i.e. the jeweler has to pay a fine. Suppose $Opt(i, w)$ selects $k'$ quantities of item $i$. Thus, $Opt(i, w) = Opt(i-1, w-k' \cdot w_i) + k' \cdot p_i - min(c_i, f_i \cdot(n_i - k'))$
+	\begin{align*}
+	m(i, w) &= \max\limits_{0 \leq k \leq min\left(x_i, \left\lfloor\frac{w}{w_i}\right\rfloor\right)}(m(i-1, w-k \cdot w_i) + k \cdot p_i - min(c_i, f_i \cdot(n_i - k)))\\
+	& \leq  m(i-1, w-k' \cdot w_i) + k' \cdot p_i - min(c_i, f_i \cdot(n_i - k'))\\
+	& \leq Opt(i-1, w-k' \cdot w_i) + k' \cdot p_i - min(c_i, f_i \cdot(n_i - k'))\\
+	& \leq Opt(i, w)
+	\end{align*}
+	Since $i-1 < i$, $m(i-1,w-k' \cdot w_i) \leq Opt(i-1,w-k' \cdot w_i)$ by induction hypothesis.
+	
+	\item Case 2: $n_i \leq k \leq x_i$. Proof is almost the same as case 1, without the fines.
+\end{itemize}
+
+This completes the proof for optimality.
+
+\paragraph{Running Time Analysis}
+The worst-case running time is $O(NkW)$, where $k$ is the maximum value in $x[1..n]$. There are three loops running -- the outermost one loops over all the items ($N$), the inner loop goes over all possible weights (units of gold, $W$) and the innermost loop goes over all possible quantities of the current item that can be selected.
+
+\end{document}
