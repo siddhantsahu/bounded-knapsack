@@ -4,7 +4,8 @@ http://www.utdallas.edu/~rbk/teach/2018/hw/p1-6363-2018s.pdf
 
 Author: Siddhant Sahu
 """
-import math
+from __future__ import print_function
+
 import os
 import sys
 
@@ -20,6 +21,11 @@ class Item(object):
         self.max = max_qty
         self.fine = fine
         self.cap = fine_cap
+
+    def __str__(self):
+        return 'Wt = {}, profit = {}, min = {}, max = {}, fine = {}, cap = {}'.format(
+            self.weight, self.profit, self.min, self.max, self.fine, self.cap
+        )
 
 
 def max_profit(W, N, items):
@@ -42,9 +48,10 @@ def max_profit(W, N, items):
             if i == 0:  # base case, no profit with 0 items
                 m[i][w] = 0
             else:
-                max_profit = -math.inf
+                max_profit = m[i - 1][w] - min(items[i - 1].cap,
+                                               items[i - 1].fine * (items[i - 1].min - 0))  # for k = 0
                 quantity = min(items[i - 1].max, w // items[i - 1].weight)
-                for k in range(quantity + 1):
+                for k in range(1, quantity + 1):
                     profit = k * items[i - 1].profit + m[i - 1][w - k * items[i - 1].weight]
                     if k < items[i - 1].min:
                         fine = min(items[i - 1].cap, items[i - 1].fine * (items[i - 1].min - k))
@@ -68,19 +75,16 @@ def get_solutions(m, items, i, w):
     """
     solutions = []
 
-    # not many opportunities to use nested functions
-    # recursion is very effective at finding multiple solutions
-    # especially, in this case
     def reconstruct(m, items, i, w):
         """Helper recursive function to reconstruct the solution."""
         if i > 0:
-            quantity = min(w // items[i - 1].weight, items[i - 1].max)
+            quantity = min(items[i - 1].max, w // items[i - 1].weight)
             for k in range(quantity + 1):
                 val = k * items[i - 1].profit
                 if k < items[i - 1].min:
                     fine = min(items[i - 1].cap, items[i - 1].fine * (items[i - 1].min - k))
                     val -= fine
-                if m[i][w] - val == m[i - 1][w - k * items[i - 1].weight]:
+                if (m[i][w] - val) == m[i - 1][w - k * items[i - 1].weight]:
                     solutions.append(k)
                     reconstruct(m, items, i - 1, w - k * items[i - 1].weight)
 
@@ -97,20 +101,20 @@ if __name__ == '__main__':
         W, N = [int(x) for x in input().split(' ')]
         for i in range(N):
             # variable nomenclature consistent with description
-            i, w, p, n, x, f, c, *rest = [int(x) for x in input().split(' ')]
+            i, w, p, n, x, f, c = [int(x) for x in input().split(' ')]
             items.append(Item(i, w, p, n, x, f, c))
     elif os.path.exists(sys.argv[1]):
         with open(sys.argv[1], 'r') as fp:
             W, N = [int(x) for x in fp.readline().strip().split(' ')]
             for i in range(N):
-                i, w, p, n, x, f, c, *rest = [int(x) for x in fp.readline().strip().split(' ')]
+                i, w, p, n, x, f, c = [int(x) for x in fp.readline().strip().split(' ')]
                 items.append(Item(i, w, p, n, x, f, c))
     else:
         raise ValueError('Command line argument not recognized or file doesn\'t exist')
 
     m = max_profit(W, N, items)
     sol = get_solutions(m, items, N, W)
-    number_of_solutions = int(len(sol) / N)
+    number_of_solutions = len(sol)
 
     # by default prints the optimal profit and the number of solutions
     print(m[N][W], number_of_solutions)

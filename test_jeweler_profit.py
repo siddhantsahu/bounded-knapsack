@@ -1,12 +1,13 @@
-import pytest
 import glob
+
+import pytest
 
 from jeweler_profit import Item, max_profit, get_solutions
 
-TEST_FILES = glob.glob('test_data/*.txt')
+TEST_FILES = glob.glob('test_data/in2*.txt')
 
 
-@pytest.fixture(scope='module', params=['test_data/in-6363-2018s.txt'])
+@pytest.fixture(scope='module', params=TEST_FILES)
 def test_data(request):
     """Parses the input and output from a file."""
     items = []
@@ -14,7 +15,7 @@ def test_data(request):
     with open(request.param, 'r') as fp:
         W, N = [int(x) for x in fp.readline().strip().split(' ')]
         for i in range(N):
-            i, w, p, n, x, f, c, *rest = [int(x) for x in fp.readline().strip().split(' ')]
+            i, w, p, n, x, f, c = [int(x) for x in fp.readline().strip().split(' ')]
             items.append(Item(i, w, p, n, x, f, c))
         fp.readline()  # caption for output
         max_profit, number_of_solutions = [int(x) for x in fp.readline().strip().split(' ')]
