@@ -28,6 +28,23 @@ class Item(object):
         )
 
 
+class Solution(object):
+    def __init__(self, id, quantity):
+        self.id = id
+        self.quantity = quantity
+        self.parent = None
+
+    def __str__(self):
+        return 'id = {}, quantity = {}, parent = ({})'.format(self.id, self.quantity, self.parent)
+
+    def print_path(self):
+        sol = []
+        while self:
+            sol.append(self.quantity)
+            self = self.parent
+        return ' '.join([str(x) for x in sol])
+
+
 def max_profit(W, N, items):
     """Computes the maximum possible profit that the jeweler can make from N
     items and W units of gold.
@@ -75,7 +92,7 @@ def get_solutions(m, items, i, w):
     """
     solutions = []
 
-    def reconstruct(m, items, i, w):
+    def reconstruct(m, items, i, w, parent=None, node=None):
         """Helper recursive function to reconstruct the solution."""
         if i > 0:
             quantity = min(items[i - 1].max, w // items[i - 1].weight)
@@ -85,11 +102,15 @@ def get_solutions(m, items, i, w):
                     fine = min(items[i - 1].cap, items[i - 1].fine * (items[i - 1].min - k))
                     val -= fine
                 if (m[i][w] - val) == m[i - 1][w - k * items[i - 1].weight]:
-                    solutions.append(k)
-                    reconstruct(m, items, i - 1, w - k * items[i - 1].weight)
+                    node = Solution(i, k)
+                    node.parent = parent
+                    reconstruct(m, items, i - 1, w - k * items[i - 1].weight, parent=node, node=node)
+        else:
+            solutions.append(node)
 
     reconstruct(m, items, i, w)
-    return set(zip(*[iter(solutions[::-1])] * i))
+
+    return solutions
 
 
 if __name__ == '__main__':
@@ -122,4 +143,4 @@ if __name__ == '__main__':
     # if there is a second command line argument, prints the list of optimal solutions
     if len(sys.argv) > 2 and sys.argv[2]:
         for s in sol:
-            print(' '.join([str(x) for x in s]))
+            print(s.print_path())
