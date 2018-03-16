@@ -29,6 +29,8 @@ class Item(object):
 
 
 class Solution(object):
+    """Class representing the item and its quantity in the solution."""
+
     def __init__(self, id, quantity):
         self.id = id
         self.quantity = quantity
@@ -37,12 +39,12 @@ class Solution(object):
     def __str__(self):
         return 'id = {}, quantity = {}, parent = ({})'.format(self.id, self.quantity, self.parent)
 
-    def print_path(self):
+    def get_items(self):
         sol = []
         while self:
             sol.append(self.quantity)
             self = self.parent
-        return ' '.join([str(x) for x in sol])
+        return tuple(sol)
 
 
 def max_profit(W, N, items):
@@ -134,13 +136,13 @@ if __name__ == '__main__':
         raise ValueError('Command line argument not recognized or file doesn\'t exist')
 
     m = max_profit(W, N, items)
-    sol = get_solutions(m, items, N, W)
-    number_of_solutions = len(sol)
+    solutions = get_solutions(m, items, N, W)
+    number_of_solutions = len(solutions)
 
     # by default prints the optimal profit and the number of solutions
     print(m[N][W], number_of_solutions)
 
     # if there is a second command line argument, prints the list of optimal solutions
     if len(sys.argv) > 2 and sys.argv[2]:
-        for s in sol:
-            print(s.print_path())
+        for sol in solutions:
+            print(' '.join(str(i) for i in sol.get_items()))

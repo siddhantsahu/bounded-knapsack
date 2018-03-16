@@ -4,7 +4,7 @@ import pytest
 
 from jeweler_profit import Item, max_profit, get_solutions
 
-TEST_FILES = glob.glob('test_data/in2*.txt')
+TEST_FILES = glob.glob('test_data/in*.txt')
 
 
 @pytest.fixture(scope='module', params=TEST_FILES)
@@ -37,9 +37,8 @@ def test_max_profit(test_data):
 
 def test_solutions(test_data, test_max_profit):
     W, N, items = test_data['input']
-    max_value, n_solutions, solutions = test_data['output']
-    print(solutions)
+    _, _, solutions = test_data['output']
     m = test_max_profit
     sol = get_solutions(m, items, N, W)
-    assert len(sol) == n_solutions
+    sol = set([s.get_items() for s in sol])
     assert sol == solutions
