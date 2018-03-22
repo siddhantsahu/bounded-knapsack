@@ -2,21 +2,24 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage[margin=1in]{geometry}
+\usepackage{clrscode3e}
 
 \title{CS 6363.004 Algorithms: Programming Project}
 \author{Siddhant Sahu}
 
 \setlength{\parindent}{0em}
+\newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
+\newcommand{\itemattr}[1]{\attrib{\id{items[i]}}{#1}}
 
 \begin{document}
 \maketitle
 
-\paragraph{Problem Formulation}
-We define $m(i, w)$ to be the maximum profit that can be generated using the first $i$ items and $w$ units of gold, where $i$ and $w$ are both non-negative integers. Clearly, $m(0, w) = 0$ for all $w$. We can't make any profit with 0 items. The recurrence is:
+\subsection*{Recurrence}
+We define $m(i, w)$ to be the maximum profit that can be generated using the first $i$ items and $w$ units of gold, where $i$ and $w$ are both non-negative integers. Clearly, the jeweler can't make any profit with 0 items. So, $m(0, w) = 0$. The recurrence is:
 
 \[ m(i, w) =
 \begin{cases}
-\max (m(i-1, w-k \cdot w_i) + k \cdot p_i - min(c_i, f_i \cdot (n_i - k)))       & \quad \text{if } 0 \leq k < n_i\\
+\max (m(i-1, w-k \cdot w_i) + k \cdot p_i - \min (c_i, f_i \cdot (n_i - k)))       & \quad \text{if } 0 \leq k < n_i\\
 \max (m(i-1, w-k \cdot w_i) + k \cdot p_i)  & \quad \text{if } n_i \leq k \leq x_i
 \end{cases}
 \]
@@ -24,31 +27,88 @@ We define $m(i, w)$ to be the maximum profit that can be generated using the fir
 where $k$ represents the quantity (i.e. number of copies) of item $i$.
 $$\ 0 \leq k \leq min\left(x_i, \left\lfloor\frac{w}{w_i}\right\rfloor\right)$$
 
+When the jeweler is unable to meet the minimum quantity ($k < n_i$) according to the contract, a fine $\min (c_i, f_i \cdot (n_i - k)))$ is levied.
+
+\subsection*{Proof of correctness}
+
 \paragraph{Feasibility}
 Proof by induction on $i$. We claim that there exists a solution for $m(i, w)$.\\
 Basis Step: Let $i = 0$. We can not make any profit with 0 items. Thus, $m(0, w) = 0$, which is correct. This establishes the basis step.\\
 Inductive Step: For any $(i, w)$ and $\ 0 \leq k \leq min\left(x_i, \left\lfloor\frac{w}{w_i}\right\rfloor\right)$, we have two cases as mentioned in the recursion. In both cases, we compute $m(i-1, w-k \cdot w_i)$. Since, $i-1 < i$, by induction hypothesis, $m(i-1, w-k \cdot w_i)$ is feasible. This completes the inductive step and therefore, the feasibility proof.
 
 \paragraph{Optimality}
-Let $Opt(i, w)$ be an optimal solution for the problem by using the first $i$ items and $w$ units of gold. We claim that $m(i, w) \leq Opt(i, w)$. Proof by induction on $i$.\\
+Let $Opt(i, w)$ be an optimal solution for the problem by using the first $i$ items and $w$ units of gold. We claim that $m(i, w) \geq Opt(i, w)$. Proof by induction on $i$.\\
 Basis Step: Let $i = 0$. We can not make any profit with 0 items. Thus, $m(0, w) = 0 = Opt(0, w)$, which is correct.\\
 Inductive Step: Consider $i > 0$ and $0 \leq k \leq min\left(x_i, \left\lfloor\frac{w}{w_i}\right\rfloor\right)$. We have two cases here.
 \begin{itemize}
-	\item Case 1: $0 \leq k \leq n_i$, i.e. the jeweler has to pay a fine. Suppose $Opt(i, w)$ selects $k'$ quantities of item $i$. Thus, $Opt(i, w) = Opt(i-1, w-k' \cdot w_i) + k' \cdot p_i - min(c_i, f_i \cdot(n_i - k'))$
+	\item Case 1: $0 \leq k < n_i$, i.e. the jeweler has to pay a fine. Suppose $Opt(i, w)$ selects $k'$ quantities of item $i$. Thus, $Opt(i, w) = Opt(i-1, w-k' \cdot w_i) + k' \cdot p_i - \min(c_i, f_i \cdot(n_i - k'))$
 	\begin{align*}
-	m(i, w) &= \max\limits_{0 \leq k \leq min\left(x_i, \left\lfloor\frac{w}{w_i}\right\rfloor\right)}(m(i-1, w-k \cdot w_i) + k \cdot p_i - min(c_i, f_i \cdot(n_i - k)))\\
-	& \leq  m(i-1, w-k' \cdot w_i) + k' \cdot p_i - min(c_i, f_i \cdot(n_i - k'))\\
-	& \leq Opt(i-1, w-k' \cdot w_i) + k' \cdot p_i - min(c_i, f_i \cdot(n_i - k'))\\
-	& \leq Opt(i, w)
+	m(i, w) &= \max\limits_{0 \leq k \leq min\left(x_i, \left\lfloor\frac{w}{w_i}\right\rfloor\right)}(m(i-1, w-k \cdot w_i) + k \cdot p_i - \min(c_i, f_i \cdot(n_i - k)))\\
+	& \geq  m(i-1, w-k' \cdot w_i) + k' \cdot p_i - \min(c_i, f_i \cdot(n_i - k'))\\
+	& \geq Opt(i-1, w-k' \cdot w_i) + k' \cdot p_i - \min(c_i, f_i \cdot(n_i - k'))\\
+	& \geq Opt(i, w)
 	\end{align*}
-	Since $i-1 < i$, $m(i-1,w-k' \cdot w_i) \leq Opt(i-1,w-k' \cdot w_i)$ by induction hypothesis.
+	Since $i-1 < i$, $m(i-1,w-k' \cdot w_i) \geq Opt(i-1,w-k' \cdot w_i)$ by induction hypothesis.
 	
 	\item Case 2: $n_i \leq k \leq x_i$. Proof is almost the same as case 1, without the fines.
 \end{itemize}
 
 This completes the proof for optimality.
 
-\paragraph{Running Time Analysis}
-The worst-case running time is $O(NkW)$, where $k$ is the maximum value in $x[1..n]$. There are three loops running -- the outermost one loops over all the items ($N$), the inner loop goes over all possible weights (units of gold, $W$) and the innermost loop goes over all possible quantities of the current item that can be selected.
+\subsection*{Pseudocode}
+
+The input to $\proc{Max-Profit-Calculator}$ is the total units of gold available $W$ and a list of items $\id{items}$ with attributes $w$, $p$, $n$, $x$, $f$ and $c$. Attribute naming convention is consistent with the problem description.
+
+\begin{codebox}
+\Procname{$\proc{Max-Profit-Calculator}(W, \id{items})$}
+\li $N \gets \attrib{\id{items}}{length}$
+\li let $m[0 \twodots N, 0 \twodots W]$ be a new table
+\li \For $w = 0$ \To $W$ \Do
+\li 	$m[0, w] \gets 0$
+	\End
+\li \For $i = 1$ \To $N$ \Do
+\li 	\For $w = 1$ \To $W$ \Do
+\li 		$m[i, w] \gets -\infty$
+\li 		$\id{quantity} \gets \min(\itemattr{x}, \floor{w/\itemattr{w}})$
+\li			\For $k = 0$ \To $\id{quantity}$ \Do
+\li 			$q \gets m[i-1, w-k \cdot \itemattr{w}] + k \cdot \itemattr{p}$
+\li 			\If $k < \itemattr{n}$ \Then
+\li 				$q \gets q - \min(\itemattr{c}, \itemattr{f} \cdot (\itemattr{n} - k))$
+				\End
+\li 			\If $q > m[i, w]$ \Then
+\li 				$m[i, w] \gets q$
+				\End
+			\End
+		\End
+	\End
+\li \Return $m$
+\end{codebox}
+
+\subsection*{Running Time Analysis}
+The worst-case running time is $O(kNW)$, where $k$ is the maximum value in $x[1 \twodots n]$. When $k=N$, running time is $O(N^2W)$. There are three loops running -- the outermost one loops over all the items ($N$), the inner loop goes over all possible weights (units of gold, $W$) and the innermost loop goes over all possible quantities of the current item that can be selected.
+
+\subsection*{Constructing Optimal Solutions}
+Although $\proc{Max-Profit-Calculator}$ determines the maximum profit that the jeweler can generate, it doesn't directly show how many quantities of each item to make. The table $m[1 \twodots N,1 \twodots W]$ gives us the information needed to reconstruct the solutions. Since multiple values of $k_i$ (i.e. quantity of item $i$ chosen) can generate the optimal profit, we can determine all such quantities recursively. The following recursive procedure $\proc{Reconstruct}(\id{items}, m, i, w, \id{parent}, \id{node})$ prints the optimal solutions, i.e. the number of quantities for the items $1,2 \twodots i$ with available units of gold $w$ using the table $m$ returned from $\proc{Max-Profit-Calculator}$.
+
+\begin{codebox}
+\Procname{$\proc{Reconstruct}(\id{items}, m, i, w, \id{parent}, \id{node})$}
+\li \If $i \isequal 0$ \Then
+\li 	append $\id{node}$ to $\id{solutions}$
+\li	\Else
+\li		$\id{quantity} \gets \min(\itemattr{x}, \floor{w/\itemattr{w}})$
+\li \For $k = 0$ \To $\id{quantity}$ \Do
+\li 	$\id{profit} \gets k \cdot \itemattr{p}$
+\li 	\If $k < \itemattr{n}$ \Then
+\li 		$\id{profit} \gets \id{profit} - \min(\itemattr{c}, \itemattr{f} \cdot (\itemattr{n} - k))$
+		\End
+\li 	\Comment $\id{profit}$ is the profit made from $k$ quantities of item $i$
+\li 	\Comment if this $\id{profit}$ leads to an optimal solution, recurse on the rest of the items
+\li \If $m[i, w] \isequal \id{profit} + m[i-1, w-\itemattr{w}]$ \Then
+\li		$\id{node} \gets (i, k)$
+\li 	$\attrib{\id{node}}{parent} \gets parent$
+\li 	$\proc{Reconstruct}(\id{items}, m, i-1, w-k \cdot \itemattr{w}, \id{node}, \id{node})$
+
+
+\end{codebox}
 
 \end{document}
