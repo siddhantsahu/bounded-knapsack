@@ -58,9 +58,10 @@ def max_profit(W, N, items):
 
     Returns
         2d table whose (i, w) index represents the maximum profit that can be
-        made with the first id items and w units of gold
+        made with the first i items and w units of gold
     """
     m = [[None for j in range(W + 1)] for i in range(N + 1)]
+    sol = [[0 for j in range(W + 1)] for i in range(N + 1)]
 
     for i in range(N + 1):
         for w in range(W + 1):
@@ -78,7 +79,14 @@ def max_profit(W, N, items):
                     if profit > max_profit:
                         max_profit = profit
                 m[i][w] = max_profit
-    return m
+                for k in range(1, quantity + 1):
+                    profit = k * items[i - 1].profit + m[i - 1][w - k * items[i - 1].weight]
+                    if k < items[i - 1].min:
+                        fine = min(items[i - 1].cap, items[i - 1].fine * (items[i - 1].min - k))
+                        profit -= fine
+                    if profit == max_profit:
+                        sol[i][w] += 1
+    return m, sol
 
 
 def get_solutions(m, items, i, w):
@@ -135,14 +143,14 @@ if __name__ == '__main__':
     else:
         raise ValueError('Command line argument not recognized or file doesn\'t exist')
 
-    m = max_profit(W, N, items)
-    solutions = get_solutions(m, items, N, W)
-    number_of_solutions = len(solutions)
+    m, sol = max_profit(W, N, items)
+    number_of_solutions = sol[-1][-1]
 
     # by default prints the optimal profit and the number of solutions
     print(m[N][W], number_of_solutions)
 
     # if there is a second command line argument, prints the list of optimal solutions
-    if len(sys.argv) > 2 and sys.argv[2]:
+    if len(sys.argv) > 2 and int(sys.argv[2]) > 0:
+        solutions = get_solutions(m, items, N, W)
         for sol in solutions:
             print(' '.join(str(i) for i in sol.get_items()))
