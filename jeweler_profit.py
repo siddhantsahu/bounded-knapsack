@@ -61,17 +61,22 @@ def max_profit(W, N, items):
         made with the first i items and w units of gold
     """
     m = [[None for j in range(W + 1)] for i in range(N + 1)]
-    sol = [[0 for j in range(W + 1)] for i in range(N + 1)]
+    count = [[0 for j in range(W + 1)] for i in range(N + 1)]
+
+    # m and count tables are 1-indexed, while items is 0-indexed
 
     for i in range(N + 1):
         for w in range(W + 1):
+            if i == 1:
+                count[i][w] = 1
             if i == 0:  # base case, no profit with 0 items
                 m[i][w] = 0
+                count[i][w] = 0
             else:
                 max_profit = m[i - 1][w] - min(items[i - 1].cap,
                                                items[i - 1].fine * (items[i - 1].min - 0))  # for k = 0
                 quantity = min(items[i - 1].max, w // items[i - 1].weight)
-                for k in range(1, quantity + 1):
+                for k in range(0, quantity + 1):
                     profit = k * items[i - 1].profit + m[i - 1][w - k * items[i - 1].weight]
                     if k < items[i - 1].min:
                         fine = min(items[i - 1].cap, items[i - 1].fine * (items[i - 1].min - k))
@@ -79,14 +84,14 @@ def max_profit(W, N, items):
                     if profit > max_profit:
                         max_profit = profit
                 m[i][w] = max_profit
-                for k in range(1, quantity + 1):
+                for k in range(0, quantity + 1):
                     profit = k * items[i - 1].profit + m[i - 1][w - k * items[i - 1].weight]
                     if k < items[i - 1].min:
                         fine = min(items[i - 1].cap, items[i - 1].fine * (items[i - 1].min - k))
                         profit -= fine
                     if profit == max_profit:
-                        sol[i][w] += 1
-    return m, sol
+                        count[i][w] += count[i - 1][w - k * items[i - 1].weight]
+    return m, count
 
 
 def get_solutions(m, items, i, w):

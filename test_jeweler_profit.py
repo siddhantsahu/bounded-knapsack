@@ -29,9 +29,10 @@ def test_data(request):
 @pytest.fixture(scope='module')
 def test_max_profit(test_data):
     W, N, items = test_data['input']
-    max_value, _, _ = test_data['output']
-    m = max_profit(W, N, items)
+    max_value, number_of_solutions, _ = test_data['output']
+    m, sol = max_profit(W, N, items)
     assert m[N][W] == max_value
+    assert sol[N][W] == number_of_solutions
     return m
 
 
@@ -39,6 +40,6 @@ def test_solutions(test_data, test_max_profit):
     W, N, items = test_data['input']
     _, _, solutions = test_data['output']
     m = test_max_profit
-    sol = get_solutions(m, items, N, W)
-    sol = set([s.get_items() for s in sol])
-    assert sol == solutions
+    items = get_solutions(m, items, N, W)
+    items = set([s.get_items() for s in items])
+    assert items == solutions
