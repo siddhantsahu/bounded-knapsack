@@ -1,7 +1,7 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath,amssymb,amsthm}
-\usepackage[margin=1in]{geometry}
+\usepackage[margin=0.9in]{geometry}
 \usepackage{clrscode3e}
 
 \title{CS 6363.004 Algorithms: Programming Project}
@@ -10,12 +10,16 @@
 \setlength{\parindent}{0em}
 \newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
 \newcommand{\itemattr}[1]{\attrib{\id{items[i]}}{#1}}
+\DeclareMathOperator*{\argmax}{argmax}
 
 \begin{document}
 \maketitle
 
-\subsection*{Recurrence}
-We define $m(i, w)$ to be the maximum profit that can be generated using the first $i$ items and $w$ units of gold, where $i$ and $w$ are both non-negative integers. Clearly, the jeweler can't make any profit with 0 items. So, $m(0, w) = 0$. The recurrence is:
+\section{Finding Maximum Profit}
+
+\subsection{Recurrence}
+We define $m(i, w)$ to be the maximum profit that can be generated using the first $i$ items and $w$ units of gold, where $i$ and $w$ are both non-negative integers. Clearly, the jeweler can't make any profit with 0 items. So, $m(0, w) = 0$. 
+When the jeweler is unable to meet the minimum quantity ($k < n_i$) according to the contract, a fine $\min (c_i, f_i \cdot (n_i - k)))$ is levied. The recurrence for finding maximum profit is:
 
 \[ m(i, w) =
 \begin{cases}
@@ -27,9 +31,7 @@ We define $m(i, w)$ to be the maximum profit that can be generated using the fir
 where $k$ represents the quantity (i.e. number of copies) of item $i$.
 $$\ 0 \leq k \leq min\left(x_i, \left\lfloor\frac{w}{w_i}\right\rfloor\right)$$
 
-When the jeweler is unable to meet the minimum quantity ($k < n_i$) according to the contract, a fine $\min (c_i, f_i \cdot (n_i - k)))$ is levied.
-
-\subsection*{Proof of correctness}
+\subsection{Proof of correctness}
 
 \paragraph{Feasibility}
 Proof by induction on $i$. We claim that there exists a solution for $m(i, w)$.\\
@@ -55,7 +57,7 @@ Inductive Step: Consider $i > 0$ and $0 \leq k \leq min\left(x_i, \left\lfloor\f
 
 This completes the proof for optimality.
 
-\subsection*{Pseudocode}
+\subsection{Pseudocode}
 
 The input to $\proc{Max-Profit-Calculator}$ is the total units of gold available $W$ and a list of items $\id{items}$ with attributes $w$, $p$, $n$, $x$, $f$ and $c$. Attribute naming convention is consistent with the problem description.
 
@@ -78,37 +80,75 @@ The input to $\proc{Max-Profit-Calculator}$ is the total units of gold available
 \li 			\If $q > m[i, w]$ \Then
 \li 				$m[i, w] \gets q$
 				\End
-			\End
+			\End		
 		\End
 	\End
 \li \Return $m$
 \end{codebox}
 
-\subsection*{Running Time Analysis}
-The worst-case running time is $O(kNW)$, where $k$ is the maximum value in $x[1 \twodots n]$. When $k=N$, running time is $O(N^2W)$. There are three loops running -- the outermost one loops over all the items ($N$), the inner loop goes over all possible weights (units of gold, $W$) and the innermost loop goes over all possible quantities of the current item that can be selected.
+Maximum profit is $m[N, W]$. A quick inspection tells us the running time is $O(kNW)$, where $k$ is the maximum value in $x[1 \twodots n]$. If $k=N$, running time is $O(N^2W)$.
 
-\subsection*{Constructing Optimal Solutions}
-Although $\proc{Max-Profit-Calculator}$ determines the maximum profit that the jeweler can generate, it doesn't directly show how many quantities of each item to make. The table $m[1 \twodots N,1 \twodots W]$ gives us the information needed to reconstruct the solutions. Since multiple values of $k_i$ (i.e. quantity of item $i$ chosen) can generate the optimal profit, we can determine all such quantities recursively. The following recursive procedure $\proc{Reconstruct}(\id{items}, m, i, w, \id{parent}, \id{node})$ prints the optimal solutions, i.e. the number of quantities for the items $1,2 \twodots i$ with available units of gold $w$ using the table $m$ returned from $\proc{Max-Profit-Calculator}$.
+\section{Counting Number of Solutions}
+
+\subsection{Recurrence}
+We define $c(i, w)$ to be the number of solutions that generate the maximum profit $m(i, w)$. With 0 items, the solution set is empty. With one item, there is exactly one solution. Thus, the recurrence is:
+
+\[ c(i, w) =
+\begin{cases}
+\sum_{k \in \argmax{m(i, w)}} c(i-1, w-k \cdot w_i) & \quad \text{if } i \geq 2\\
+1 & \quad \text{if } i = 1\\
+0 & \quad \text{if } i = 0
+\end{cases}
+\]
+
+\subsection{Proof of Correctness}
+
+\paragraph{Feasibility}
+Proof by induction on $i$. We claim that there exists a solution for $c(i, w)$.\\
+Basis Step: For $i=0$, there are no solutions. Thus, $c(i, w) = 0$ and for $i=1$, there is exactly one solution: $c(i, w) = 1$. The base case is established.\\
+Inductive Step: For $i \geq 2$, $c(i, w) = \sum_{k \in \argmax{m(i, w)}} c(i-1, w-k \cdot w_i)$. The right-hand side is a smaller subproblem as $i-1 < i$. Therefore, by inductive hypothesis, $c(i, w)$ is feasible.
+
+\paragraph{Optimality}
+This proof assumes that $m(i, w)$ is optimal, which has been proven above. Let $Opt(i, w)$ count the number of solutions to $m(i, w)$. We claim that $c(i, w) = Opt(i, w)$. We will prove this by induction on $i$.\\
+Basis Step: For $i = 0$, there are no solutions. Thus $c(0, w) = Opt(0, w) = 0$. And, for $i = 1$, there is exactly one solution. $c(1, w) = Opt(1, w) = 1$. This establishes the basis step.\\
+Inductive Step: For $i \geq 2$, suppose there are $l$ distinct values of $k$, i.e., $k_1, \cdots k_l$ which yield $m(i, w)$. Thus, $Opt(i, w) = \sum_{k=k_1}^{k_l} Opt(i-1, w-k \cdot w_i)$. By induction hypothesis, it follows:
+
+$$c(i, w) = \sum_{k=k_1}^{k_l} c(i-1, w-k \cdot w_i)
+= \sum_{k=k_1}^{k_l} Opt(i-1, w-k \cdot w_i)
+= Opt(i, w)$$
+
+Hence, $c(i, w)$ is optimal.
+
+\subsection{Pseudocode}
+The input to $\proc{Count-Solutions}$ is $m$, the table returned from $\proc{Max-Profit-Calculator}$, $W$ and a list of $\id{items}$.
 
 \begin{codebox}
-\Procname{$\proc{Reconstruct}(\id{items}, m, i, w, \id{parent}, \id{node})$}
-\li \If $i \isequal 0$ \Then
-\li 	append $\id{node}$ to $\id{solutions}$
-\li	\Else
-\li		$\id{quantity} \gets \min(\itemattr{x}, \floor{w/\itemattr{w}})$
-\li \For $k = 0$ \To $\id{quantity}$ \Do
-\li 	$\id{profit} \gets k \cdot \itemattr{p}$
-\li 	\If $k < \itemattr{n}$ \Then
-\li 		$\id{profit} \gets \id{profit} - \min(\itemattr{c}, \itemattr{f} \cdot (\itemattr{n} - k))$
-		\End
-\li 	\Comment $\id{profit}$ is the profit made from $k$ quantities of item $i$
-\li 	\Comment if this $\id{profit}$ leads to an optimal solution, recurse on the rest of the items
-\li \If $m[i, w] \isequal \id{profit} + m[i-1, w-\itemattr{w}]$ \Then
-\li		$\id{node} \gets (i, k)$
-\li 	$\attrib{\id{node}}{parent} \gets parent$
-\li 	$\proc{Reconstruct}(\id{items}, m, i-1, w-k \cdot \itemattr{w}, \id{node}, \id{node})$
-
-
+\Procname{$\proc{Count-Solutions}(m, W, \id{items})$}
+\li $N \gets \attrib{\id{items}}{length}$
+\li let $c[0 \twodots N, 0 \twodots W]$ be a new table
+\li \For $w = 0$ \To $W$ \Do
+\li 	$c[0, w] \gets 0$
+	\End
+\li \For $w = 0$ \To $W$ \Do
+\li 	$c[1, w] \gets 1$
+	\End
+\li \For $i = 1$ \To $N$ \Do
+\li 	\For $w = 1$ \To $W$ \Do
+\li 		$\id{quantity} \gets \min(\itemattr{x}, \floor{w/\itemattr{w}})$
+\li			\For $k = 0$ \To $\id{quantity}$ \Do
+\li 			$q \gets m[i-1, w-k \cdot \itemattr{w}] + k \cdot \itemattr{p}$
+\li 			\If $k < \itemattr{n}$ \Then
+\li 				$q \gets q - \min(\itemattr{c}, \itemattr{f} \cdot (\itemattr{n} - k))$
+				\End
+\li 			\If $q \isequal m[i, w]$ \Then
+\li 				$c[i, w] \gets c[i, w] + c[i-1, w-k \cdot \itemattr{w}]$
+			\End
+		\End		
+	\End
+\End
+\li \Return $c$
 \end{codebox}
+
+Total number of solutions to the problem is $c[N, W]$. The running time is same as $\proc{Max-Profit-Calculator}$, i.e. $O(kNW)$ or $O(N^2W)$ if $k = N$.
 
 \end{document}
