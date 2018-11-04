@@ -1,6 +1,6 @@
 ## Algorithms: Jeweler Profit Optimization (Bounded Knapsack)
 
-Problem statementFor recurrence equations and proof of correctness, see `report.pdf`.
+For recurrence equations and proof of correctness, see `report.pdf`.
 
 ### Usage Guide (Python)
 ***Not recommended**. Python version is for verifying correctness of algorithm and testing on small inputs.*
