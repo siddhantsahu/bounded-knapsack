@@ -16,7 +16,7 @@ Alternatively, we can also use `pytest` to test if everything works.
 - Place test files in `test_data` folder. Either rename all test files to the form `in*.txt` or choose test files by changing the 7th line in `test_jeweler_profit.py`. For example, to test the code against a file `test_data/test_sample.txt`, change the 7th line to the following:
   `TEST_FILES = ['test_data/test_sample.txt']`
 
-**Note:** I took this as an opportunity to learn [Cython](http://docs.cython.org/en/latest/). Although I do not have the benchmark now and am too lazy to recreate it, I remember Cython beating the same code in Java (for this particular problem) by about 5-10%.
+**Note:** I took this as an opportunity to learn [Cython](http://docs.cython.org/en/latest/).
 
 **TODO:** Add time benchmarks for Cython, Numba and Java.
 
